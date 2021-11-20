@@ -28,10 +28,9 @@ namespace MMO_EFCore
 
         public static void CreateTestData(AppDbContext db)
         {
-            var player = new Player()
-            {
-                Name = "yj"
-            };
+            var yj = new Player() { Name = "Yj" };
+            var faker = new Player() { Name = "Faker" };
+            var deft = new Player() { Name = "Deft" };
 
             List<Item> items = new List<Item>()
             {
@@ -39,78 +38,112 @@ namespace MMO_EFCore
                 {
                     TemplateId = 101,
                     CreateDate = DateTime.Now,
-                    Owner = player
+                    Owner = yj
                 },
                 new Item()
                 {
                     TemplateId = 102,
                     CreateDate = DateTime.Now,
-                    Owner = player
+                    Owner = faker
                 },
                 new Item()
                 {
                     TemplateId = 103,
                     CreateDate = DateTime.Now,
-                    Owner = new Player() { Name = "Faker" }
+                    Owner = deft
                 }
             };
 
+            Guild guild = new Guild()
+            {
+                GuildName = "T1",
+                Members = new List<Player>() { yj, faker, deft }
+            };
+
             db.Items.AddRange(items);
+            db.Guilds.Add(guild);
             db.SaveChanges();
         }
 
-        public static void ReadAll()
+        // 1 + 2) 특정 길드에 있는 길드원들이 소지한 모든 아이템들을 보고 싶다!
+
+        // EagerLoading
+        // 장점 : 한번의 DB 접근으로 모두 로딩 (JOIN)
+        // 단점 : 모두가 다 필요한지 모른 채 로딩
+        public static void EagerLoading()
         {
+            Console.WriteLine("길드 이름을 입력하세요");
+            Console.Write(" > ");
+            string name = Console.ReadLine();
+
             using (var db = new AppDbContext())
             {
+                Guild guild = db.Guilds.AsNoTracking()
+                    .Where(g => g.GuildName == name)
+                    .Include(g => g.Members)
+                        .ThenInclude(p => p.Item)
+                    .First();
+
                 // AsNoTracking : ReadOnly << Tracking SnapShot이라고 데이터 변경 탐지하는 기능 때문
                 // Include : Eager Loading (즉시 로딩) << 나중에 알아볼 것
-                foreach (Item item in db.Items.AsNoTracking().Include(i => i.Owner))
+                foreach (Player player in guild.Members)
                 {
-                    Console.WriteLine($"TemplateId({item.TemplateId}) Owner({item.Owner.Name}) Created({item.CreateDate})");
+                    Console.WriteLine($"TemplateId({player.Item.TemplateId}) Owner({player.Name})");
                 }
             }
         }
 
-        // 특정 플레이어가 소지한 아이템들의 CreateDate를 수정
-        public static void UpdateDate()
+        // ExplicitLoding
+        // 장점 : 원하는 시점에 원하는 데이터만 로딩 가능
+        // 단점 : DB 접근 비용
+        public static void ExplicitLoading()
         {
-            Console.WriteLine("Input Player Name");
-            Console.WriteLine("> ");
+            Console.WriteLine("길드 이름을 입력하세요");
+            Console.Write(" > ");
             string name = Console.ReadLine();
 
             using (var db = new AppDbContext())
             {
-                var items = db.Items.Include(i => i.Owner)
-                    .Where(i => i.Owner.Name == name);
+                Guild guild = db.Guilds
+                    .Where(g => g.GuildName == name)
+                    .First();
 
-                foreach (Item item in items)
+                db.Entry(guild).Collection(g => g.Members).Load();
+                
+                foreach (Player player in guild.Members)
                 {
-                    item.CreateDate = DateTime.Now;
+                    db.Entry(player).Reference(p => p.Item).Load();
                 }
 
-                db.SaveChanges();
+                foreach (Player player in guild.Members)
+                {
+                    Console.WriteLine($"TemplateId({player.Item.TemplateId}) Owner({player.Name})");
+                }
             }
-
-            ReadAll();
         }
 
-        public static void DeleteItem()
+        // 3) 특정 길드에 있는 길드원 수는?
+
+        // SelectLoading
+        // 장점 : 필요한 정보만 로딩가능
+        // 단점 : 일일이 Select문 안에 입력해주어야함
+        public static void SelectLoading()
         {
-            Console.WriteLine("Input Player Name");
-            Console.WriteLine("> ");
+            Console.WriteLine("길드 이름을 입력하세요");
+            Console.Write(" > ");
             string name = Console.ReadLine();
 
             using (var db = new AppDbContext())
             {
-                var items = db.Items.Include(i => i.Owner)
-                    .Where(i => i.Owner.Name == name);
+                var info = db.Guilds
+                    .Where(g => g.GuildName == name)
+                    .MapGuildToDto()
+                    .First();
 
-                db.Items.RemoveRange(items);
-                db.SaveChanges();
+                Console.WriteLine($"GuildName({info.Name}), MemberCound({info.MemberCount})");
             }
-
-            ReadAll();
         }
+
+       
     }
 }
