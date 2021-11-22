@@ -49,6 +49,7 @@ namespace MMO_EFCore
     // DTO (Data Transfer Object)
     public class GuildDto
     {
+        public int GuildId { get; set; }
         public string Name { get; set; }
         public int MemberCount { get; set; }
     }
