@@ -11,20 +11,6 @@ namespace MMO_EFCore
 {
     public class DbCommands
     {
-        public static void InitializeDB(bool forceReset = false)
-        {
-            using (AppDbContext db = new AppDbContext())
-            {
-                if (!forceReset && (db.GetService<IDatabaseCreator>() as RelationalDatabaseCreator).Exists())
-                    return;
-
-                db.Database.EnsureDeleted();
-                db.Database.EnsureCreated();
-
-                CreateTestData(db);
-                Console.WriteLine("DB Initialized");
-            }
-        }
 
         // State 관리
         // 0) Detached (No Tracking ! 추적되지 않는 상태. SaveChanges를 해도 존재조차 모름)
@@ -42,15 +28,27 @@ namespace MMO_EFCore
         // 이미 존재하는 사용자를 연동하려면?
         // 1) Tracked Instance (추적되고 있는 객체)를 얻어와서
         // 2) 데이터 연결
+        public static void InitializeDB(bool forceReset = false)
+        {
+            using (AppDbContext db = new AppDbContext())
+            {
+                if (!forceReset && (db.GetService<IDatabaseCreator>() as RelationalDatabaseCreator).Exists())
+                    return;
+
+                db.Database.EnsureDeleted();
+                db.Database.EnsureCreated();
+
+                CreateTestData(db);
+                Console.WriteLine("DB Initialized");
+            }
+        }
+
 
         public static void CreateTestData(AppDbContext db)
         {
             var yj = new Player() { Name = "Yj" };
             var faker = new Player() { Name = "Faker" };
             var deft = new Player() { Name = "Deft" };
-
-            // 1) Detached
-            //Console.WriteLine(db.Entry(yj).State);
 
             List<Item> items = new List<Item>()
             {
@@ -83,13 +81,7 @@ namespace MMO_EFCore
             db.Items.AddRange(items);
             db.Guilds.Add(guild);
 
-            // 2) Added
-            //Console.WriteLine(db.Entry(yj).State);
-
             db.SaveChanges();
-
-            // 3) Uncharged
-            //Console.WriteLine(db.Entry(yj).State);
         }
 
         // 1 + 2) 특정 길드에 있는 길드원들이 소지한 모든 아이템들을 보고 싶다!
@@ -171,6 +163,42 @@ namespace MMO_EFCore
             }
         }
 
-       
+        // Update 3단계
+        // 1) Tracked Entity를 얻어 온다
+        // 2) Entity 클래스의 property를 변경 (set)
+        // 3) SaveChanges 호출
+        
+        // Update를 할 때 전체 수정을 하는 것일까?
+        // 수정해야할 부분만 수정할까?
+
+        // 1) SaveChanges 호출 할 때 -> 내부적으로 DetectChanges라는 호출
+        // 2) DetectChange에서 -> 최초 Snapshot / 현재 Snapshot 비교
+
+        /*
+         * SELECT TOP(2) GuildId, GuildName
+         * FROM [Guilds]
+         * WHERE GuildName = N'T1';
+         * 
+         * SET NOCOUNT ON;
+         * UPDATE [Guilds]
+         * SET GuildName = @p0
+         * WHERE GuildId = @p1;
+         * 
+         * SELECT @@ROWCOUNT;
+         * 
+         * 
+         */
+
+        public static void UpdateTest()
+        {
+            using (AppDbContext db = new AppDbContext())
+            {
+                var guild = db.Guilds.Single(g => g.GuildName == "T1");
+
+                guild.GuildName = "DWG";
+                
+                db.SaveChanges();
+            }
+        }
     }
 }
