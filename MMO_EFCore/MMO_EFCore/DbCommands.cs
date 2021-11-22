@@ -97,6 +97,11 @@ namespace MMO_EFCore
         // 답은 Nullable ! ex)int?
         // FK 그냥 int로 설정하면 1번, Nullable으로 설정하면 2번
 
+        // 1) FK가 Nullable이 아니라면
+        // - Player가 지워지면, FK로 해당 Player 참조하는 Item도 같이 삭제됨
+        // 2) FK가 Nullable이라면
+        // - Player가 지워지더라도 FK로 해당 Player 참조하는 Item은 그대로
+
         public static void ShowItems()
         {
             using (AppDbContext db = new AppDbContext())
@@ -111,10 +116,72 @@ namespace MMO_EFCore
             }
         }
 
-        // 1) FK가 Nullable이 아니라면
-        // - Player가 지워지면, FK로 해당 Player 참조하는 Item도 같이 삭제됨
-        // 2) FK가 Nullable이라면
-        // - Player가 지워지더라도 FK로 해당 Player 참조하는 Item은 그대로
+        public static void Update_1v1()
+        {
+            ShowItems();
+
+            Console.WriteLine("Input ItemSwich PlayerId");
+            Console.Write(" > ");
+            int id = int.Parse(Console.ReadLine());
+
+            using (AppDbContext db = new AppDbContext())
+            {
+                Player player = db.Players
+                    .Include(p => p.Item)
+                    .Single(p => p.PlayerId == id);
+
+                if (player.Item != null)
+                {
+                    player.Item.TemplateId = 888;
+                    player.Item.CreateDate = DateTime.Now;
+                }
+
+                //player.Item = new Item()
+                //{
+                //    TemplateId = 777,
+                //    CreateDate = DateTime.Now
+                //};
+                
+                db.SaveChanges();
+            }
+
+            Console.WriteLine("--- Test Complete ---");
+            ShowItems();
+        }
+
+        public static void Update_1vM()
+        {
+            ShowGuilds();
+
+            Console.WriteLine("Input GuildId");
+            Console.Write(" > ");
+            int id = int.Parse(Console.ReadLine());
+
+            using (AppDbContext db = new AppDbContext())
+            {
+                Guild guild = db.Guilds
+                    .Include(g => g.Members) //-> Include하면 덮어써짐
+                    .Single(g => g.GuildId == id);
+
+                //guild.Members.Add(new Player()
+                //{
+                //    Name = "Dopa"
+                //});
+
+                //guild.Members = new List<Player>()
+                //{
+                //    new Player() { Name = "Keria" }
+                //};
+
+                guild.Members.Add(new Player() { Name = "Keria" });
+
+                db.SaveChanges();
+            }
+
+            Console.WriteLine("--- Test Complete ---");
+            ShowGuilds();
+        }
+
         public static void Test()
         {
             ShowItems();
@@ -259,8 +326,6 @@ namespace MMO_EFCore
                 {
                     Console.WriteLine($"GuildId({guild.GuildId}) GuildName({guild.Name}) MemberCount({guild.MemberCount}) ");
                 }
-
-
             }
         }
 
