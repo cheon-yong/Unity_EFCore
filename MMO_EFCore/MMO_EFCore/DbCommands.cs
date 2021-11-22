@@ -84,6 +84,60 @@ namespace MMO_EFCore
             db.SaveChanges();
         }
 
+        // RelationShip 복습
+        // - Principal Entity (주요 -> Player)
+        // - Dependent Entity (의존적 -> FK 포함하는 쪽 -> item)
+
+        // 오늘의 주제
+        // Dependent 데이터가 Principal 데이터 없이 존재할 수 있는가?
+        // - 1) 주인이 없는 아이템은 불가능!
+        // - 2) 주인이 없는 아이템도 가능! (ex. 로그 차원에서 남기는 경우)
+
+        // 그러면 2 케이스 어떻게 구분해서 설정을 해야할까??
+        // 답은 Nullable ! ex)int?
+        // FK 그냥 int로 설정하면 1번, Nullable으로 설정하면 2번
+
+        public static void ShowItems()
+        {
+            using (AppDbContext db = new AppDbContext())
+            {
+                foreach (var item in db.Items.Include(i => i.Owner).ToList())
+                {
+                    if (item.Owner == null)
+                        Console.WriteLine($"ItemId({item.ItemId}) TemplateId({item.TemplateId}) Owner(0)");
+                    else
+                        Console.WriteLine($"ItemId({item.ItemId}) TemplateId({item.TemplateId}) Owner({item.Owner.Name})");
+                }
+            }
+        }
+
+        // 1) FK가 Nullable이 아니라면
+        // - Player가 지워지면, FK로 해당 Player 참조하는 Item도 같이 삭제됨
+        // 2) FK가 Nullable이라면
+        // - Player가 지워지더라도 FK로 해당 Player 참조하는 Item은 그대로
+        public static void Test()
+        {
+            ShowItems();
+
+            Console.WriteLine("Input Delete PlayerId");
+            Console.Write(" > ");
+            int id = int.Parse(Console.ReadLine());
+
+            using (AppDbContext db = new AppDbContext())
+            {
+                Player player = db.Players
+                    .Include(p => p.Item)
+                    .Single(p => p.PlayerId == id);
+
+                db.Players.Remove(player);
+                db.SaveChanges();
+            }
+
+            Console.WriteLine("--- Test Complete ---");
+            ShowItems();
+        }
+
+
         // 1 + 2) 특정 길드에 있는 길드원들이 소지한 모든 아이템들을 보고 싶다!
 
         // EagerLoading
