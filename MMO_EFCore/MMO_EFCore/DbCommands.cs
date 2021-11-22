@@ -84,6 +84,30 @@ namespace MMO_EFCore
             db.SaveChanges();
         }
 
+        // 1) Tracking Entity를 획득
+        // 2) Remove 호출
+        // 3) SaveChanges 호출
+
+        public static void TestDelete()
+        {
+            ShowItems();
+
+            Console.WriteLine("Select Delete ItemId");
+            Console.Write(" > ");
+            int id = int.Parse(Console.ReadLine());
+
+            using (AppDbContext db = new AppDbContext())
+            {
+                Item item = db.Items.Find(id);
+                //db.Items.Remove(item);
+                item.SoftDeleted = true;
+                db.SaveChanges();
+            }
+
+            Console.WriteLine("--- TestDelete Complete ---");
+            ShowItems();
+        }
+
         // RelationShip 복습
         // - Principal Entity (주요 -> Player)
         // - Dependent Entity (의존적 -> FK 포함하는 쪽 -> item)
