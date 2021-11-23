@@ -41,6 +41,16 @@ namespace MMO_EFCore
                 .HasIndex(p => p.Name)
                 .HasName("Index_Person_name")
                 .IsUnique();
+
+            builder.Entity<Player>()
+                .HasMany(p => p.CreatedItems)
+                .WithOne(i => i.Creator) // 상대쪽
+                .HasForeignKey(i => i.CreatorId); // 1:M인 경우에는 M인 쪽에 FK
+
+            builder.Entity<Player>()
+                .HasOne(p => p.OwnedItem)
+                .WithOne(i => i.Owner)
+                .HasForeignKey<Item>(i => i.OwnerId);
         }
     }
 }

@@ -88,325 +88,325 @@ namespace MMO_EFCore
         // 2) Remove 호출
         // 3) SaveChanges 호출
 
-        public static void TestDelete()
-        {
-            ShowItems();
+        //public static void TestDelete()
+        //{
+        //    ShowItems();
 
-            Console.WriteLine("Select Delete ItemId");
-            Console.Write(" > ");
-            int id = int.Parse(Console.ReadLine());
+        //    Console.WriteLine("Select Delete ItemId");
+        //    Console.Write(" > ");
+        //    int id = int.Parse(Console.ReadLine());
 
-            using (AppDbContext db = new AppDbContext())
-            {
-                Item item = db.Items.Find(id);
-                //db.Items.Remove(item);
-                item.SoftDeleted = true;
-                db.SaveChanges();
-            }
+        //    using (AppDbContext db = new AppDbContext())
+        //    {
+        //        Item item = db.Items.Find(id);
+        //        //db.Items.Remove(item);
+        //        item.SoftDeleted = true;
+        //        db.SaveChanges();
+        //    }
 
-            Console.WriteLine("--- TestDelete Complete ---");
-            ShowItems();
-        }
+        //    Console.WriteLine("--- TestDelete Complete ---");
+        //    ShowItems();
+        //}
 
-        // RelationShip 복습
-        // - Principal Entity (주요 -> Player)
-        // - Dependent Entity (의존적 -> FK 포함하는 쪽 -> item)
+        //// RelationShip 복습
+        //// - Principal Entity (주요 -> Player)
+        //// - Dependent Entity (의존적 -> FK 포함하는 쪽 -> item)
 
-        // 오늘의 주제
-        // Dependent 데이터가 Principal 데이터 없이 존재할 수 있는가?
-        // - 1) 주인이 없는 아이템은 불가능!
-        // - 2) 주인이 없는 아이템도 가능! (ex. 로그 차원에서 남기는 경우)
+        //// 오늘의 주제
+        //// Dependent 데이터가 Principal 데이터 없이 존재할 수 있는가?
+        //// - 1) 주인이 없는 아이템은 불가능!
+        //// - 2) 주인이 없는 아이템도 가능! (ex. 로그 차원에서 남기는 경우)
 
-        // 그러면 2 케이스 어떻게 구분해서 설정을 해야할까??
-        // 답은 Nullable ! ex)int?
-        // FK 그냥 int로 설정하면 1번, Nullable으로 설정하면 2번
+        //// 그러면 2 케이스 어떻게 구분해서 설정을 해야할까??
+        //// 답은 Nullable ! ex)int?
+        //// FK 그냥 int로 설정하면 1번, Nullable으로 설정하면 2번
 
-        // 1) FK가 Nullable이 아니라면
-        // - Player가 지워지면, FK로 해당 Player 참조하는 Item도 같이 삭제됨
-        // 2) FK가 Nullable이라면
-        // - Player가 지워지더라도 FK로 해당 Player 참조하는 Item은 그대로
+        //// 1) FK가 Nullable이 아니라면
+        //// - Player가 지워지면, FK로 해당 Player 참조하는 Item도 같이 삭제됨
+        //// 2) FK가 Nullable이라면
+        //// - Player가 지워지더라도 FK로 해당 Player 참조하는 Item은 그대로
 
-        public static void ShowItems()
-        {
-            using (AppDbContext db = new AppDbContext())
-            {
-                foreach (var item in db.Items.Include(i => i.Owner).ToList())
-                {
-                    if (item.Owner == null)
-                        Console.WriteLine($"ItemId({item.ItemId}) TemplateId({item.TemplateId}) Owner(0)");
-                    else
-                        Console.WriteLine($"ItemId({item.ItemId}) TemplateId({item.TemplateId}) Owner({item.Owner.Name})");
-                }
-            }
-        }
+        //public static void ShowItems()
+        //{
+        //    using (AppDbContext db = new AppDbContext())
+        //    {
+        //        foreach (var item in db.Items.Include(i => i.Owner).ToList())
+        //        {
+        //            if (item.Owner == null)
+        //                Console.WriteLine($"ItemId({item.ItemId}) TemplateId({item.TemplateId}) Owner(0)");
+        //            else
+        //                Console.WriteLine($"ItemId({item.ItemId}) TemplateId({item.TemplateId}) Owner({item.Owner.Name})");
+        //        }
+        //    }
+        //}
 
-        public static void Update_1v1()
-        {
-            ShowItems();
+        //public static void Update_1v1()
+        //{
+        //    ShowItems();
 
-            Console.WriteLine("Input ItemSwich PlayerId");
-            Console.Write(" > ");
-            int id = int.Parse(Console.ReadLine());
+        //    Console.WriteLine("Input ItemSwich PlayerId");
+        //    Console.Write(" > ");
+        //    int id = int.Parse(Console.ReadLine());
 
-            using (AppDbContext db = new AppDbContext())
-            {
-                Player player = db.Players
-                    .Include(p => p.Item)
-                    .Single(p => p.PlayerId == id);
+        //    using (AppDbContext db = new AppDbContext())
+        //    {
+        //        Player player = db.Players
+        //            .Include(p => p.Item)
+        //            .Single(p => p.PlayerId == id);
 
-                if (player.Item != null)
-                {
-                    player.Item.TemplateId = 888;
-                    player.Item.CreateDate = DateTime.Now;
-                }
+        //        if (player.Item != null)
+        //        {
+        //            player.Item.TemplateId = 888;
+        //            player.Item.CreateDate = DateTime.Now;
+        //        }
 
-                //player.Item = new Item()
-                //{
-                //    TemplateId = 777,
-                //    CreateDate = DateTime.Now
-                //};
+        //        //player.Item = new Item()
+        //        //{
+        //        //    TemplateId = 777,
+        //        //    CreateDate = DateTime.Now
+        //        //};
                 
-                db.SaveChanges();
-            }
+        //        db.SaveChanges();
+        //    }
 
-            Console.WriteLine("--- Test Complete ---");
-            ShowItems();
-        }
+        //    Console.WriteLine("--- Test Complete ---");
+        //    ShowItems();
+        //}
 
-        public static void Update_1vM()
-        {
-            ShowGuilds();
+        //public static void Update_1vM()
+        //{
+        //    ShowGuilds();
 
-            Console.WriteLine("Input GuildId");
-            Console.Write(" > ");
-            int id = int.Parse(Console.ReadLine());
+        //    Console.WriteLine("Input GuildId");
+        //    Console.Write(" > ");
+        //    int id = int.Parse(Console.ReadLine());
 
-            using (AppDbContext db = new AppDbContext())
-            {
-                Guild guild = db.Guilds
-                    .Include(g => g.Members) //-> Include하면 덮어써짐
-                    .Single(g => g.GuildId == id);
+        //    using (AppDbContext db = new AppDbContext())
+        //    {
+        //        Guild guild = db.Guilds
+        //            .Include(g => g.Members) //-> Include하면 덮어써짐
+        //            .Single(g => g.GuildId == id);
 
-                //guild.Members.Add(new Player()
-                //{
-                //    Name = "Dopa"
-                //});
+        //        //guild.Members.Add(new Player()
+        //        //{
+        //        //    Name = "Dopa"
+        //        //});
 
-                //guild.Members = new List<Player>()
-                //{
-                //    new Player() { Name = "Keria" }
-                //};
+        //        //guild.Members = new List<Player>()
+        //        //{
+        //        //    new Player() { Name = "Keria" }
+        //        //};
 
-                guild.Members.Add(new Player() { Name = "Keria" });
+        //        guild.Members.Add(new Player() { Name = "Keria" });
 
-                db.SaveChanges();
-            }
+        //        db.SaveChanges();
+        //    }
 
-            Console.WriteLine("--- Test Complete ---");
-            ShowGuilds();
-        }
+        //    Console.WriteLine("--- Test Complete ---");
+        //    ShowGuilds();
+        //}
 
-        public static void Test()
-        {
-            ShowItems();
+        //public static void Test()
+        //{
+        //    ShowItems();
 
-            Console.WriteLine("Input Delete PlayerId");
-            Console.Write(" > ");
-            int id = int.Parse(Console.ReadLine());
+        //    Console.WriteLine("Input Delete PlayerId");
+        //    Console.Write(" > ");
+        //    int id = int.Parse(Console.ReadLine());
 
-            using (AppDbContext db = new AppDbContext())
-            {
-                Player player = db.Players
-                    .Include(p => p.Item)
-                    .Single(p => p.PlayerId == id);
+        //    using (AppDbContext db = new AppDbContext())
+        //    {
+        //        Player player = db.Players
+        //            .Include(p => p.Item)
+        //            .Single(p => p.PlayerId == id);
 
-                db.Players.Remove(player);
-                db.SaveChanges();
-            }
+        //        db.Players.Remove(player);
+        //        db.SaveChanges();
+        //    }
 
-            Console.WriteLine("--- Test Complete ---");
-            ShowItems();
-        }
+        //    Console.WriteLine("--- Test Complete ---");
+        //    ShowItems();
+        //}
 
 
-        // 1 + 2) 특정 길드에 있는 길드원들이 소지한 모든 아이템들을 보고 싶다!
+        //// 1 + 2) 특정 길드에 있는 길드원들이 소지한 모든 아이템들을 보고 싶다!
 
-        // EagerLoading
-        // 장점 : 한번의 DB 접근으로 모두 로딩 (JOIN)
-        // 단점 : 모두가 다 필요한지 모른 채 로딩
-        public static void EagerLoading()
-        {
-            Console.WriteLine("길드 이름을 입력하세요");
-            Console.Write(" > ");
-            string name = Console.ReadLine();
+        //// EagerLoading
+        //// 장점 : 한번의 DB 접근으로 모두 로딩 (JOIN)
+        //// 단점 : 모두가 다 필요한지 모른 채 로딩
+        //public static void EagerLoading()
+        //{
+        //    Console.WriteLine("길드 이름을 입력하세요");
+        //    Console.Write(" > ");
+        //    string name = Console.ReadLine();
 
-            using (var db = new AppDbContext())
-            {
-                Guild guild = db.Guilds.AsNoTracking()
-                    .Where(g => g.GuildName == name)
-                    .Include(g => g.Members)
-                        .ThenInclude(p => p.Item)
-                    .First();
+        //    using (var db = new AppDbContext())
+        //    {
+        //        Guild guild = db.Guilds.AsNoTracking()
+        //            .Where(g => g.GuildName == name)
+        //            .Include(g => g.Members)
+        //                .ThenInclude(p => p.Item)
+        //            .First();
 
-                // AsNoTracking : ReadOnly << Tracking SnapShot이라고 데이터 변경 탐지하는 기능 때문
-                // Include : Eager Loading (즉시 로딩) << 나중에 알아볼 것
-                foreach (Player player in guild.Members)
-                {
-                    Console.WriteLine($"TemplateId({player.Item.TemplateId}) Owner({player.Name})");
-                }
-            }
-        }
+        //        // AsNoTracking : ReadOnly << Tracking SnapShot이라고 데이터 변경 탐지하는 기능 때문
+        //        // Include : Eager Loading (즉시 로딩) << 나중에 알아볼 것
+        //        foreach (Player player in guild.Members)
+        //        {
+        //            Console.WriteLine($"TemplateId({player.Item.TemplateId}) Owner({player.Name})");
+        //        }
+        //    }
+        //}
 
-        // ExplicitLoding
-        // 장점 : 원하는 시점에 원하는 데이터만 로딩 가능
-        // 단점 : DB 접근 비용
-        public static void ExplicitLoading()
-        {
-            Console.WriteLine("길드 이름을 입력하세요");
-            Console.Write(" > ");
-            string name = Console.ReadLine();
+        //// ExplicitLoding
+        //// 장점 : 원하는 시점에 원하는 데이터만 로딩 가능
+        //// 단점 : DB 접근 비용
+        //public static void ExplicitLoading()
+        //{
+        //    Console.WriteLine("길드 이름을 입력하세요");
+        //    Console.Write(" > ");
+        //    string name = Console.ReadLine();
 
-            using (var db = new AppDbContext())
-            {
-                Guild guild = db.Guilds
-                    .Where(g => g.GuildName == name)
-                    .First();
+        //    using (var db = new AppDbContext())
+        //    {
+        //        Guild guild = db.Guilds
+        //            .Where(g => g.GuildName == name)
+        //            .First();
 
-                db.Entry(guild).Collection(g => g.Members).Load();
+        //        db.Entry(guild).Collection(g => g.Members).Load();
 
-                foreach (Player player in guild.Members)
-                {
-                    db.Entry(player).Reference(p => p.Item).Load();
-                }
+        //        foreach (Player player in guild.Members)
+        //        {
+        //            db.Entry(player).Reference(p => p.Item).Load();
+        //        }
 
-                foreach (Player player in guild.Members)
-                {
-                    Console.WriteLine($"TemplateId({player.Item.TemplateId}) Owner({player.Name})");
-                }
-            }
-        }
+        //        foreach (Player player in guild.Members)
+        //        {
+        //            Console.WriteLine($"TemplateId({player.Item.TemplateId}) Owner({player.Name})");
+        //        }
+        //    }
+        //}
 
-        // 3) 특정 길드에 있는 길드원 수는?
+        //// 3) 특정 길드에 있는 길드원 수는?
 
-        // SelectLoading
-        // 장점 : 필요한 정보만 로딩가능
-        // 단점 : 일일이 Select문 안에 입력해주어야함
-        public static void SelectLoading()
-        {
-            Console.WriteLine("길드 이름을 입력하세요");
-            Console.Write(" > ");
-            string name = Console.ReadLine();
+        //// SelectLoading
+        //// 장점 : 필요한 정보만 로딩가능
+        //// 단점 : 일일이 Select문 안에 입력해주어야함
+        //public static void SelectLoading()
+        //{
+        //    Console.WriteLine("길드 이름을 입력하세요");
+        //    Console.Write(" > ");
+        //    string name = Console.ReadLine();
 
-            using (var db = new AppDbContext())
-            {
-                var info = db.Guilds
-                    .Where(g => g.GuildName == name)
-                    .MapGuildToDto()
-                    .First();
+        //    using (var db = new AppDbContext())
+        //    {
+        //        var info = db.Guilds
+        //            .Where(g => g.GuildName == name)
+        //            .MapGuildToDto()
+        //            .First();
 
-                Console.WriteLine($"GuildName({info.Name}), MemberCound({info.MemberCount})");
-            }
-        }
+        //        Console.WriteLine($"GuildName({info.Name}), MemberCound({info.MemberCount})");
+        //    }
+        //}
 
-        // Update 3단계
-        // 1) Tracked Entity를 얻어 온다
-        // 2) Entity 클래스의 property를 변경 (set)
-        // 3) SaveChanges 호출
+        //// Update 3단계
+        //// 1) Tracked Entity를 얻어 온다
+        //// 2) Entity 클래스의 property를 변경 (set)
+        //// 3) SaveChanges 호출
 
-        // Update를 할 때 전체 수정을 하는 것일까?
-        // 수정해야할 부분만 수정할까?
+        //// Update를 할 때 전체 수정을 하는 것일까?
+        //// 수정해야할 부분만 수정할까?
 
-        // 1) SaveChanges 호출 할 때 -> 내부적으로 DetectChanges라는 호출
-        // 2) DetectChange에서 -> 최초 Snapshot / 현재 Snapshot 비교
+        //// 1) SaveChanges 호출 할 때 -> 내부적으로 DetectChanges라는 호출
+        //// 2) DetectChange에서 -> 최초 Snapshot / 현재 Snapshot 비교
 
-        /*
-         * SELECT TOP(2) GuildId, GuildName
-         * FROM [Guilds]
-         * WHERE GuildName = N'T1';
-         * 
-         * SET NOCOUNT ON;
-         * UPDATE [Guilds]
-         * SET GuildName = @p0
-         * WHERE GuildId = @p1;
-         * 
-         * SELECT @@ROWCOUNT;
-         * 
-         * 
-         */
+        ///*
+        // * SELECT TOP(2) GuildId, GuildName
+        // * FROM [Guilds]
+        // * WHERE GuildName = N'T1';
+        // * 
+        // * SET NOCOUNT ON;
+        // * UPDATE [Guilds]
+        // * SET GuildName = @p0
+        // * WHERE GuildId = @p1;
+        // * 
+        // * SELECT @@ROWCOUNT;
+        // * 
+        // * 
+        // */
 
-        // 오늘의 주제 : (Connected vs Disconnected) Update
-        // Disconnected : Update 단계가 한 번에 쭉~ 일어나지 않고, 끊기는 경우
-        // (REST API 등)
+        //// 오늘의 주제 : (Connected vs Disconnected) Update
+        //// Disconnected : Update 단계가 한 번에 쭉~ 일어나지 않고, 끊기는 경우
+        //// (REST API 등)
 
-        // 처리하는 2가지 방법
-        // 1) Reload 방식 : 필요한 정보만 보내서 1-2-3 스텝을 다시 시작
-        // 2) Full Update 방식 : 모든 정보를 다 보내고 받아서, 아예 Entity를 다시 만들어 Update
+        //// 처리하는 2가지 방법
+        //// 1) Reload 방식 : 필요한 정보만 보내서 1-2-3 스텝을 다시 시작
+        //// 2) Full Update 방식 : 모든 정보를 다 보내고 받아서, 아예 Entity를 다시 만들어 Update
 
-        public static void ShowGuilds()
-        {
-            using (AppDbContext db = new AppDbContext())
-            {
-                foreach (var guild in db.Guilds.MapGuildToDto())
-                {
-                    Console.WriteLine($"GuildId({guild.GuildId}) GuildName({guild.Name}) MemberCount({guild.MemberCount}) ");
-                }
-            }
-        }
+        //public static void ShowGuilds()
+        //{
+        //    using (AppDbContext db = new AppDbContext())
+        //    {
+        //        foreach (var guild in db.Guilds.MapGuildToDto())
+        //        {
+        //            Console.WriteLine($"GuildId({guild.GuildId}) GuildName({guild.Name}) MemberCount({guild.MemberCount}) ");
+        //        }
+        //    }
+        //}
 
-        // 장점 : 최소한의 정보로 Update 가능
-        // 단점 : Read 두 번 한다
-        public static void UpdateByReload()
-        {
-            ShowGuilds();
+        //// 장점 : 최소한의 정보로 Update 가능
+        //// 단점 : Read 두 번 한다
+        //public static void UpdateByReload()
+        //{
+        //    ShowGuilds();
 
-            // 외부에서 수정 원하는 데이터의 ID / 정보 넘겨줬다고 가정
-            Console.WriteLine("Input GuildId");
-            Console.Write(" > ");
-            int id = int.Parse(Console.ReadLine());
-            Console.WriteLine("Input GuildName");
-            Console.Write(" > ");
-            string name = Console.ReadLine();
+        //    // 외부에서 수정 원하는 데이터의 ID / 정보 넘겨줬다고 가정
+        //    Console.WriteLine("Input GuildId");
+        //    Console.Write(" > ");
+        //    int id = int.Parse(Console.ReadLine());
+        //    Console.WriteLine("Input GuildName");
+        //    Console.Write(" > ");
+        //    string name = Console.ReadLine();
 
-            using (AppDbContext db = new AppDbContext())
-            {
-                Guild guild = db.Find<Guild>(id);
-                guild.GuildName = name;
-                db.SaveChanges();
-            }
+        //    using (AppDbContext db = new AppDbContext())
+        //    {
+        //        Guild guild = db.Find<Guild>(id);
+        //        guild.GuildName = name;
+        //        db.SaveChanges();
+        //    }
 
-            Console.WriteLine("--- Update Complete ---");
-            ShowGuilds();
-        }
+        //    Console.WriteLine("--- Update Complete ---");
+        //    ShowGuilds();
+        //}
 
-        public static string MakeUpdateJsonStr()
-        {
-            var jsonStr = "{\"GuildId\" : 1, \"GuildName\" : \"Hello\", \"Member\":null}";
-            return jsonStr;
-        }
+        //public static string MakeUpdateJsonStr()
+        //{
+        //    var jsonStr = "{\"GuildId\" : 1, \"GuildName\" : \"Hello\", \"Member\":null}";
+        //    return jsonStr;
+        //}
 
-        // 장점 : DB에 다시 Read할 필요 없이 바로 Update
-        // 단점 : 모든 정보가 필요, 보안 문제
-        public static void UpdateByFull()
-        {
-            ShowGuilds();
+        //// 장점 : DB에 다시 Read할 필요 없이 바로 Update
+        //// 단점 : 모든 정보가 필요, 보안 문제
+        //public static void UpdateByFull()
+        //{
+        //    ShowGuilds();
 
-            //string jsonStr = MakeUpdateJsonStr();
-            //Guild guild = JsonConvert.DeserializeObject<Guild>(jsonStr);
+        //    //string jsonStr = MakeUpdateJsonStr();
+        //    //Guild guild = JsonConvert.DeserializeObject<Guild>(jsonStr);
 
-            Guild guild = new Guild()
-            {
-                GuildId = 1,
-                GuildName = "TestGuild"
-            };
+        //    Guild guild = new Guild()
+        //    {
+        //        GuildId = 1,
+        //        GuildName = "TestGuild"
+        //    };
 
-            using (AppDbContext db = new AppDbContext())
-            {
-                db.Guilds.Update(guild);
-                db.SaveChanges();
-            }
+        //    using (AppDbContext db = new AppDbContext())
+        //    {
+        //        db.Guilds.Update(guild);
+        //        db.SaveChanges();
+        //    }
 
-            Console.WriteLine("--- Update Complete ---");
-            ShowGuilds();
-        }
+        //    Console.WriteLine("--- Update Complete ---");
+        //    ShowGuilds();
+        //}
     }
 }

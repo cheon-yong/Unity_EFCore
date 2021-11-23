@@ -37,7 +37,6 @@ namespace MMO_EFCore
     // 문자열길이     [MaxLength(20] .HasMaxLength(20)
     // 문자 형식                     .IsUnicode(true)
 
-
     // Q2) PK
     // [Key][Column(Order=0)] [key][Column(Order=1)]
     // .HasKey(x => new {x.Prop1, x.Prop2})
@@ -72,6 +71,46 @@ namespace MMO_EFCore
     // 1:다
     // 다:다
 
+    // 기본 용어 복습
+    // 1) Principal Entity
+    // 2) Dependent Entity
+    // 3) Navigational Property
+    // 4) Primary key (PK)
+    // 5) Foreign key (FK)
+    // 6) Principal Key = PK or Unique Alternative key
+    // 7) Required Relationship (Not-Null)
+    // 8) Optional Relationship (Nullable)
+
+
+    // Convention을 이용한 FK 설정
+    // 1) <PrincipalKeyName>                                 PlayerId
+    // 2) <Class><PrincipalKeyName>                          PlayerPlayerId
+    // 3) <NavigationalPropertyName><PrincipalKeyName>       OwnerPlayerId  OwnerId
+
+    // FK 와 Nullable
+    // 1) Required Relationship (Not-Null)
+    // 삭제할 때 OnDelete 인자를 Cascade 모드로 호출 -> Principal 삭제하면 Dependent 삭제
+    // 2) Optional Relationship (Nullable)
+    // 삭제할 때 OnDelete 인자를 ClientSetNull 모드로 호출
+    // -> Pricipal 삭제할 때 Dependent Tracking하고 있으면, FK 를 null 세팅
+    // -> Pricipal 삭제할 때 Dependent Tracking하고 있지 않으면, Exception 발생
+
+    // Convention 방식으로 못하는 것들
+    // 1) 복합 키
+    // 2) 다수의 Navigational Property가 같은 클래스를 참조할 때
+    // 3) DB나 삭제 관련 커스터마이징 필요할 때
+
+    // Data Annotation으로 Relationship 설정
+    // [ForeignKey("Prop1")]
+    // [InverseProperty] -> 다수의 Navigational Property가 같은 클래스를 참조할 때
+
+    // Fluent Api로 Relationship 설정
+    // .HasOne() .HasMany()
+    // .WithOne() .WithMany()
+    // .HasForeignKey() .IsRequired() .OnDelete()
+    // .HasContrainName() .HasPrincipalKey()
+
+
     // Entity 클래스 이름 = 테이블 이름 = item
     [Table("Item")]
     public class Item
@@ -84,8 +123,11 @@ namespace MMO_EFCore
 
         // 다른 클래스 참조 -> FK (Navigational Property)
         // [ForeignKey("OwnerId")]
-        public int? OwnerId { get; set; }
+        public int OwnerId { get; set; }
         public Player Owner { get; set; }
+        
+        public int? CreatorId { get; set; }
+        public Player Creator { get; set; }
     }
 
 
@@ -99,8 +141,9 @@ namespace MMO_EFCore
         [MaxLength(20)]
         public string Name { get; set; }
 
-        //public ICollection<Item> Items { get; set; }
-        public Item Item { get; set; }
+        public Item OwnedItem { get; set; }
+        public ICollection<Item> CreatedItems { get; set; }
+
         public Guild Guild { get; set; }
     }
 
