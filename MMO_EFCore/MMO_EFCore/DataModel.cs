@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,6 +9,8 @@ namespace MMO_EFCore
 {
     // 오늘의 주제 (21-11-23) : Configuration
 
+
+    // Data Modeling Configuration
     // A) Convention (관례)
     // - 각종 형식과 이름 등을 정해진 규칙에 맞게 만들면, EF Core에서 알아서 처리
     // - 쉽고 빠르지만, 모든 경우를 처리할 수 없음
@@ -71,6 +74,9 @@ namespace MMO_EFCore
     // 1:다
     // 다:다
 
+
+    // Relationship Configuration
+
     // 기본 용어 복습
     // 1) Principal Entity
     // 2) Dependent Entity
@@ -111,10 +117,47 @@ namespace MMO_EFCore
     // .HasContrainName() .HasPrincipalKey()
 
 
+    // Shadow Property & Backing Field
+
+    // Shadow Property
+    // Class에는 있지만 DB에는 없음 -> [NotMapped] .Ignore()
+    // DB에는 있지만 Class에는 없음 -> Shadow Property
+    // 생성 -> .Property<DateTime>("UpdatedOn")
+    // Read/Write -> .Property("RecoveredDate").CurrentValue
+
+    // Backing Field
+    // private property를 DB에 매핑하고, public getter로 가공해서 사용
+    // ex) DB에는 json 형태로 string을 저장하고, getter은 json을 가공해서 사용
+    // 일반적으로 Fluent Api
+
     // Entity 클래스 이름 = 테이블 이름 = item
+
+    public struct ItemOption
+    {
+        public int str;
+        public int dex;
+        public int hp;
+    }
+
     [Table("Item")]
     public class Item
     {
+        private string _jsonData;
+        public string JsonData 
+        {
+            get { return _jsonData; }
+        }
+
+        public void SetOption(ItemOption option)
+        {
+            _jsonData = JsonConvert.SerializeObject(option);
+        }
+
+        public ItemOption GetOption()
+        {
+            return JsonConvert.DeserializeObject<ItemOption>(_jsonData);
+        }
+
         public bool SoftDeleted { get; set; }
         // 이름Id -> PK
         public int ItemId { get; set; }
