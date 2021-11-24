@@ -85,7 +85,7 @@ namespace MMO_EFCore
             items[2].Detail = new ItemDetail()
             {
                 Description = "This is good Item"
-            }
+            };
 
             Guild guild = new Guild()
             {
@@ -145,7 +145,7 @@ namespace MMO_EFCore
         {
             using (AppDbContext db = new AppDbContext())
             {
-                foreach (var item in db.Items.Include(i => i.Owner).ToList())
+                foreach (var item in db.Items.Include(i => i.Owner).Include(i => i.Detail).ToList())
                 {
                     
                     if (item.SoftDeleted)
@@ -162,6 +162,8 @@ namespace MMO_EFCore
                             Console.WriteLine("DestroyDate: " + eventItem.DestroyDate);
 
                         // Test Table Splitting
+                        if (item.Detail != null)
+                            Console.WriteLine(item.Detail.Description);
 
                         if (item.Owner == null)
                             Console.WriteLine($"ItemId({item.ItemId}) TemplateId({item.TemplateId}) Owner(0)");

@@ -172,7 +172,7 @@ namespace MMO_EFCore
         NormalItem,
         EventItem,
     }
-    [Table("Item")]
+    [Table("Items")]
     public class Item
     {
         public ItemType Type { get; set; }
