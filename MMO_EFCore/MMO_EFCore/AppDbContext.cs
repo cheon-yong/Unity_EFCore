@@ -18,6 +18,7 @@ namespace MMO_EFCore
         // DbSet<Item> -> EF Core한테 알려준다.
         // items이라는 DB 테이블이 있는데, 세부적인 칼럼/키 정보는 Item 클래스를 참고
         public DbSet<Item> Items { get; set; }
+        public DbSet<EventItem> EventItems { get; set; }
         public DbSet<Player> Players { get; set; }
         public DbSet<Guild> Guilds { get; set; }
 
@@ -42,23 +43,24 @@ namespace MMO_EFCore
                 .HasName("Index_Person_name")
                 .IsUnique();
 
-            builder.Entity<Player>()
-                .HasMany(p => p.CreatedItems)
-                .WithOne(i => i.Creator) // 상대쪽
-                .HasForeignKey(i => i.CreatorId); // 1:M인 경우에는 M인 쪽에 FK
-
-            builder.Entity<Player>()
-                .HasOne(p => p.OwnedItem)
-                .WithOne(i => i.Owner)
-                .HasForeignKey<Item>(i => i.OwnerId);
-
-            // Shadow Property
-            builder.Entity<Item>().Property<DateTime>("RecoveredDate");
-
-            // Backing Filed
             builder.Entity<Item>()
-                .Property(i => i.JsonData)
-                .HasField("_jsonData");
+                .OwnsOne(i => i.Option)
+                .ToTable("ItemOption");
+
+            // TPH
+            builder.Entity<Item>()
+                .HasDiscriminator(i => i.Type)
+                .HasValue<Item>(ItemType.NormalItem)
+                .HasValue<EventItem>(ItemType.EventItem);
+
+            // Table Splitting
+            builder.Entity<Item>()
+                .HasOne(i => i.Detail)
+                .WithOne()
+                .HasForeignKey<ItemDetail>(i => i.ItemDetailId);
+
+            builder.Entity<Item>().ToTable("Items");
+            builder.Entity<ItemDetail>().ToTable("Items");
         }
     }
 }

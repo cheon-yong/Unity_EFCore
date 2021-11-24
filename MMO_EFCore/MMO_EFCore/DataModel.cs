@@ -130,35 +130,56 @@ namespace MMO_EFCore
     // ex) DB에는 json 형태로 string을 저장하고, getter은 json을 가공해서 사용
     // 일반적으로 Fluent Api
 
-    // Entity 클래스 이름 = 테이블 이름 = item
+    // 오늘의 주제 : Entity <-> DB Table 연동하는 다양한 방법들
+    // Entity Class 하나를 통으로 Read/Writh -> 부담 (Select Loading, DTO)
 
-    public struct ItemOption
+    // 1) Owned Type
+    // - 일반 클래스를 Entity Class에 추가하는 개념
+    // a) 동일한 테이블 추가
+    // - .OwnsOne()
+    // - RelationShip이 아니라 Ownership의 개념이기 때문에 자동 .Include()
+    // b) 다른 테이블에 추가
+    // - .OwnsOne().ToTable()
+
+    // 2) Table Per Hierarchy (TPH)
+    // - 상속 관계의 여러 class <-> 하나의 테이블에 매핑
+    // ex) Dog, Cat, Bird -> Animal
+    // a) Convention
+    // - 일단을 Class를 상속받아 만들고 DBSet에 추가
+    // - Discriminator ?
+    // b) Fluent Api
+    // - .HasDiscriminator 
+
+    // 3) Table Splitting
+    // - 다수의 Entity Class <-> 하나의 테이블에 매핑
+
+    // Entity 클래스 이름 = 테이블 이름 = item
+    public class ItemOption
     {
-        public int str;
-        public int dex;
-        public int hp;
+        public int Str { get; set; }
+        public int Dex { get; set; }
+        public int Hp { get; set; }
     }
 
+    public class ItemDetail
+    {
+        public int ItemDetailId { get; set; }
+        public string Description { get; set; }
+    }
+
+    public enum ItemType
+    {
+        NormalItem,
+        EventItem,
+    }
     [Table("Item")]
     public class Item
     {
-        private string _jsonData;
-        public string JsonData 
-        {
-            get { return _jsonData; }
-        }
-
-        public void SetOption(ItemOption option)
-        {
-            _jsonData = JsonConvert.SerializeObject(option);
-        }
-
-        public ItemOption GetOption()
-        {
-            return JsonConvert.DeserializeObject<ItemOption>(_jsonData);
-        }
-
+        public ItemType Type { get; set; }
         public bool SoftDeleted { get; set; }
+
+        public ItemOption Option { get; set; }
+        public ItemDetail Detail { get; set; }
         // 이름Id -> PK
         public int ItemId { get; set; }
         public int TemplateId { get; set; }
@@ -168,11 +189,12 @@ namespace MMO_EFCore
         // [ForeignKey("OwnerId")]
         public int OwnerId { get; set; }
         public Player Owner { get; set; }
-        
-        public int? CreatorId { get; set; }
-        public Player Creator { get; set; }
     }
 
+    public class EventItem : Item
+    {
+        public DateTime DestroyDate { get; set; }
+    }
 
     // 클래스 이름 = 테이블 이름 = player
     [Table("Player")]
@@ -185,8 +207,6 @@ namespace MMO_EFCore
         public string Name { get; set; }
 
         public Item OwnedItem { get; set; }
-        public ICollection<Item> CreatedItems { get; set; }
-
         public Guild Guild { get; set; }
     }
 

@@ -21,7 +21,7 @@ namespace MMO_EFCore
             {
                 Console.WriteLine("명령어를 입력하세요");
                 Console.WriteLine("[0] Force Reset");
-                Console.WriteLine("[1] TestDelete");
+                Console.WriteLine("[1] ShowItems");
                 Console.Write(" > ");
                 string command = Console.ReadLine();
                 switch (command)
@@ -30,6 +30,7 @@ namespace MMO_EFCore
                         DbCommands.InitializeDB(forceReset: true);
                         break;
                     case "1":
+                        DbCommands.ShowItems();
                         break;
                     case "2":
                         break;

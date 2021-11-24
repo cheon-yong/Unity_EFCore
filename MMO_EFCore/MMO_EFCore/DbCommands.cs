@@ -58,11 +58,12 @@ namespace MMO_EFCore
                     CreateDate = DateTime.Now,
                     Owner = yj
                 },
-                new Item()
+                new EventItem()
                 {
                     TemplateId = 102,
                     CreateDate = DateTime.Now,
-                    Owner = faker
+                    Owner = faker,
+                    DestroyDate = DateTime.Now
                 },
                 new Item()
                 {
@@ -73,10 +74,18 @@ namespace MMO_EFCore
             };
 
             // Test Shadow Property Value Write
-            db.Entry(items[0]).Property("RecoveredDate").CurrentValue = DateTime.Now;
+            //db.Entry(items[0]).Property("RecoveredDate").CurrentValue = DateTime.Now;
 
             // Test Backing Field
-            items[0].SetOption(new ItemOption() { dex = 1, hp = 2, str = 3 });
+            //items[0].SetOption(new ItemOption() { dex = 1, hp = 2, str = 3 });
+
+            // Test Owned Type
+            items[0].Option = new ItemOption() { Dex = 1, Hp = 2, Str = 3 };
+
+            items[2].Detail = new ItemDetail()
+            {
+                Description = "This is good Item"
+            }
 
             Guild guild = new Guild()
             {
@@ -132,19 +141,36 @@ namespace MMO_EFCore
         //// 2) FK가 Nullable이라면
         //// - Player가 지워지더라도 FK로 해당 Player 참조하는 Item은 그대로
 
-        //public static void ShowItems()
-        //{
-        //    using (AppDbContext db = new AppDbContext())
-        //    {
-        //        foreach (var item in db.Items.Include(i => i.Owner).ToList())
-        //        {
-        //            if (item.Owner == null)
-        //                Console.WriteLine($"ItemId({item.ItemId}) TemplateId({item.TemplateId}) Owner(0)");
-        //            else
-        //                Console.WriteLine($"ItemId({item.ItemId}) TemplateId({item.TemplateId}) Owner({item.Owner.Name})");
-        //        }
-        //    }
-        //}
+        public static void ShowItems()
+        {
+            using (AppDbContext db = new AppDbContext())
+            {
+                foreach (var item in db.Items.Include(i => i.Owner).ToList())
+                {
+                    
+                    if (item.SoftDeleted)
+                    {
+                        Console.WriteLine($"DELETED - ItemId({item.ItemId}) TemplateId({item.TemplateId}) Owner({item.Owner.Name})");
+                    }
+                    else
+                    {
+                        if (item.Option != null)
+                            Console.WriteLine("STR " + item.Option.Str);
+
+                        EventItem eventItem = item as EventItem;
+                        if (eventItem != null)
+                            Console.WriteLine("DestroyDate: " + eventItem.DestroyDate);
+
+                        // Test Table Splitting
+
+                        if (item.Owner == null)
+                            Console.WriteLine($"ItemId({item.ItemId}) TemplateId({item.TemplateId}) Owner(0)");
+                        else
+                            Console.WriteLine($"ItemId({item.ItemId}) TemplateId({item.TemplateId}) Owner({item.Owner.Name})");
+                    }   
+                }
+            }
+        }
 
         //public static void Update_1v1()
         //{
@@ -171,7 +197,7 @@ namespace MMO_EFCore
         //        //    TemplateId = 777,
         //        //    CreateDate = DateTime.Now
         //        //};
-                
+
         //        db.SaveChanges();
         //    }
 
