@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Text;
 
 namespace MMO_EFCore
@@ -153,33 +154,22 @@ namespace MMO_EFCore
     // 3) Table Splitting
     // - 다수의 Entity Class <-> 하나의 테이블에 매핑
 
+
+    // 오늘의 주제 : Backing Field + Relationship
+    // Backing Field -> private field를 DB에 매핑
+    // Navigation Property 에서도 사용 가능!
+
+    public class ItemReview
+    {
+        public int ItemReviewId { get; set; }
+        public int Score { get; set; }
+    }
+
     // Entity 클래스 이름 = 테이블 이름 = item
-    public class ItemOption
-    {
-        public int Str { get; set; }
-        public int Dex { get; set; }
-        public int Hp { get; set; }
-    }
-
-    public class ItemDetail
-    {
-        public int ItemDetailId { get; set; }
-        public string Description { get; set; }
-    }
-
-    public enum ItemType
-    {
-        NormalItem,
-        EventItem,
-    }
     [Table("Items")]
     public class Item
     {
-        public ItemType Type { get; set; }
         public bool SoftDeleted { get; set; }
-
-        public ItemOption Option { get; set; }
-        public ItemDetail Detail { get; set; }
         // 이름Id -> PK
         public int ItemId { get; set; }
         public int TemplateId { get; set; }
@@ -189,12 +179,25 @@ namespace MMO_EFCore
         // [ForeignKey("OwnerId")]
         public int OwnerId { get; set; }
         public Player Owner { get; set; }
+
+        public double? AverageScore { get; set; }
+
+        private readonly List<ItemReview> _reviews = new List<ItemReview>();
+        public IEnumerable<ItemReview> Reviews { get { return _reviews.ToList(); } }
+
+        public void AddReview(ItemReview review)
+        {
+            _reviews.Add(review);
+            AverageScore = _reviews.Average(r => r.Score);
+        }
+
+        public void RemoveReview(ItemReview review)
+        {
+            _reviews.Remove(review);
+            AverageScore = _reviews.Any() ? _reviews.Average(r => r.Score) : (double?)null;
+        }
     }
 
-    public class EventItem : Item
-    {
-        public DateTime DestroyDate { get; set; }
-    }
 
     // 클래스 이름 = 테이블 이름 = player
     [Table("Player")]
@@ -225,4 +228,5 @@ namespace MMO_EFCore
         public string Name { get; set; }
         public int MemberCount { get; set; }
     }
+
 }

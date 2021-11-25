@@ -18,7 +18,6 @@ namespace MMO_EFCore
         // DbSet<Item> -> EF Core한테 알려준다.
         // items이라는 DB 테이블이 있는데, 세부적인 칼럼/키 정보는 Item 클래스를 참고
         public DbSet<Item> Items { get; set; }
-        public DbSet<EventItem> EventItems { get; set; }
         public DbSet<Player> Players { get; set; }
         public DbSet<Guild> Guilds { get; set; }
 
@@ -44,23 +43,9 @@ namespace MMO_EFCore
                 .IsUnique();
 
             builder.Entity<Item>()
-                .OwnsOne(i => i.Option)
-                .ToTable("ItemOption");
-
-            // TPH
-            builder.Entity<Item>()
-                .HasDiscriminator(i => i.Type)
-                .HasValue<Item>(ItemType.NormalItem)
-                .HasValue<EventItem>(ItemType.EventItem);
-
-            // Table Splitting
-            builder.Entity<Item>()
-                .HasOne(i => i.Detail)
-                .WithOne()
-                .HasForeignKey<ItemDetail>(i => i.ItemDetailId);
-
-            builder.Entity<Item>().ToTable("Items");
-            builder.Entity<ItemDetail>().ToTable("Items");
+                .Metadata
+                .FindNavigation("Reviews")
+                .SetPropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }
