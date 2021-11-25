@@ -221,10 +221,16 @@ namespace MMO_EFCore
     // 특정 Migration으로 Sync (Update-database [Name])
     // 마지막 Migration 삭제 (Remove-Migration)
 
-
     // 2) Database-First
 
     // 3) SQL-First
+    // -- 손수 만들어도 됨
+    // -- Script-Migration [From] [To] [Options]
+    // -- DB끼리의 비교를 이용하여 SQL 추출
+
+    // 1.0
+    // 1.1
+    // 1.2
 
 
     // Entity 클래스 이름 = 테이블 이름 = item
