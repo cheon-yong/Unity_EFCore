@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -170,12 +172,26 @@ namespace MMO_EFCore
     // 2) DataBase Setup
     // 3) 사용
 
+    // 초기값 (Default Value)
+    // 기본값을 설정하는 방법이 여러가지가 있다
+    // 주의해서 볼 것!
+    // 1) Entity Class 자체의 초기값으로 붙는지
+    // 2) DB Table 차원에서 초기값으로 적용되는지
+    // - 결과는 같은거 아닐까?
+    // - EF <-> DB 외에 다른 경로로 DB 사용한다면, 차이가 날 수 있다.
+    // ex) SQL Script
 
-    public class ItemReview
-    {
-        public int ItemReviewId { get; set; }
-        public int Score { get; set; }
-    }
+    // 1) Auto-Property Initializer (C# 6.0)
+    // - Entity 차원의 초기값 -> SaveChanges로 DB 적용
+    // 2) Fluent Api
+    // - DB Table DEFAULT를 적용
+    // - DateTime.Noew ? 처리 힘듦
+    // 3) SQL Fragment (새로운 값이 추가되는 시점에 DB쪽에서 실행)
+    // - .HasDefaultValueSql
+    // 4) Value Generator (EF Core 에서 실행됨)
+    // - 일종의 Generator 규칙
+
+
 
     // Entity 클래스 이름 = 테이블 이름 = item
     [Table("Items")]
@@ -185,14 +201,24 @@ namespace MMO_EFCore
         // 이름Id -> PK
         public int ItemId { get; set; }
         public int TemplateId { get; set; }
-        public DateTime CreateDate { get; set; }
+        public DateTime CreateDate { get; private set; }
 
         // 다른 클래스 참조 -> FK (Navigational Property)
         // [ForeignKey("OwnerId")]
         public int OwnerId { get; set; }
         public Player Owner { get; set; }
 
-        public ICollection<ItemReview> Reviews { get; set; }
+    }
+
+    public class PlayerNameGenerator : ValueGenerator<string>
+    {
+        public override bool GeneratesTemporaryValues => false;
+
+        public override string Next(EntityEntry entry)
+        {
+            string name = $"Player_{DateTime.Now.ToString("yyyyMMdd")}";
+            return name;
+        }
     }
 
 
