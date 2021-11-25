@@ -228,10 +228,6 @@ namespace MMO_EFCore
     // -- Script-Migration [From] [To] [Options]
     // -- DB끼리의 비교를 이용하여 SQL 추출
 
-    // 1.0
-    // 1.1
-    // 1.2
-
 
     // Entity 클래스 이름 = 테이블 이름 = item
 
