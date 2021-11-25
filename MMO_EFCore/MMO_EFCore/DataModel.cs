@@ -191,9 +191,44 @@ namespace MMO_EFCore
     // 4) Value Generator (EF Core 에서 실행됨)
     // - 일종의 Generator 규칙
 
+    // Migration
+    // 일단 EF Coree DbContext <-> DB 상태에 대해 동의가 있어야 함
+    // 무엇을 기준으로 할 것인가?
+
+    // 1) Code-First
+    // - 지금까지 우리가 사용하던 방식 (Entity Class / DbContext가 기준)
+    // - 항상 최신 상태로 DB를 업데이트 하고 싶다는 의미가 아님
+
+    // +++ Migration Step +++
+    // A) Migration 만들고
+    // B) Migration 적용하고
+
+    // A) Add-Migration [Name]
+    // - 1) DbContext를 찾아서 분석 -> DB 모델링 (최신)
+    // - 2) ~ModelSnapshot.cs을 이용하여 가장 마지막 Migration 상태의 DB 모델링 (가장 마지막 상태)
+    // - 3) 1-2 비교 결과 도출
+    // -- a) ModelSnapshot
+    // -- b) Migrate.Designer.cs와 Migrate.cs -> Migration과 관련된 세부정보
+    // 수동으로 Up, Down을 추가해도 됨
+
+    // B) Migration 적용
+    // - 1) SQL change script
+    // -- Script-Migration [From] [To] [Options]
+    // - 2) Database.Migarte 호출
+    // - 3) Command Line 방식
+    // - Update-Database [options]
+    
+    // 특정 Migration으로 Sync (Update-database [Name])
+    // 마지막 Migration 삭제 (Remove-Migration)
+
+
+    // 2) Database-First
+
+    // 3) SQL-First
 
 
     // Entity 클래스 이름 = 테이블 이름 = item
+
     [Table("Items")]
     public class Item
     {
@@ -203,24 +238,14 @@ namespace MMO_EFCore
         public int TemplateId { get; set; }
         public DateTime CreateDate { get; private set; }
 
+        public int ItemGrade { get; set; }
+
         // 다른 클래스 참조 -> FK (Navigational Property)
         // [ForeignKey("OwnerId")]
         public int OwnerId { get; set; }
         public Player Owner { get; set; }
 
     }
-
-    public class PlayerNameGenerator : ValueGenerator<string>
-    {
-        public override bool GeneratesTemporaryValues => false;
-
-        public override string Next(EntityEntry entry)
-        {
-            string name = $"Player_{DateTime.Now.ToString("yyyyMMdd")}";
-            return name;
-        }
-    }
-
 
     // 클래스 이름 = 테이블 이름 = player
     [Table("Player")]

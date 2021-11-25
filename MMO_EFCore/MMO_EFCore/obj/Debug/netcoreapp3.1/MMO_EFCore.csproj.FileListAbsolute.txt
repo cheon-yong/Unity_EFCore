@@ -60,3 +60,5 @@ D:\vs2019_C#_part8\MMO_EFCore\MMO_EFCore\obj\Debug\netcoreapp3.1\MMO_EFCore.cspr
 D:\vs2019_C#_part8\MMO_EFCore\MMO_EFCore\obj\Debug\netcoreapp3.1\MMO_EFCore.dll
 D:\vs2019_C#_part8\MMO_EFCore\MMO_EFCore\obj\Debug\netcoreapp3.1\MMO_EFCore.pdb
 D:\vs2019_C#_part8\MMO_EFCore\MMO_EFCore\obj\Debug\netcoreapp3.1\MMO_EFCore.genruntimeconfig.cache
+D:\vs2019_C#_part8\MMO_EFCore\MMO_EFCore\bin\Debug\netcoreapp3.1\Microsoft.EntityFrameworkCore.Design.dll
+D:\vs2019_C#_part8\MMO_EFCore\MMO_EFCore\bin\Debug\netcoreapp3.1\Humanizer.dll
