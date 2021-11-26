@@ -118,39 +118,37 @@ namespace MMO_EFCore
 
             db.Items.AddRange(items);
             db.Guilds.Add(guild);
-
-            Console.WriteLine("1번 : " + db.Entry(yj).State);
             
             db.SaveChanges();
 
-            // Add Test
-            {
-                Item item = new Item()
-                {
-                    TemplateId = 500,
-                    Owner = yj
-                };
-                db.Items.Add(item);
-                // 아이템 추가 -> 간접적으로 player 영향
-                // player는 Tracking 상태이고 Fk 설정은 필요 없음
-                Console.WriteLine("2번 : " + db.Entry(yj).State);
-            }
+            //// Add Test
+            //{
+            //    Item item = new Item()
+            //    {
+            //        TemplateId = 500,
+            //        Owner = yj
+            //    };
+            //    db.Items.Add(item);
+            //    // 아이템 추가 -> 간접적으로 player 영향
+            //    // player는 Tracking 상태이고 Fk 설정은 필요 없음
+            //    Console.WriteLine("2번 : " + db.Entry(yj).State);
+            //}
 
-            // Delete Test
-            {
-                Player p = db.Players.First();
+            //// Delete Test
+            //{
+            //    Player p = db.Players.First();
 
-                // 위에서 아이템이 이미 DB에 들어간 상태(DB 키 있음)
-                p.Guild = new Guild() { GuildName = "삭제될 길드" };
-                p.OwnedItem = items[0];
+            //    // 위에서 아이템이 이미 DB에 들어간 상태(DB 키 있음)
+            //    p.Guild = new Guild() { GuildName = "삭제될 길드" };
+            //    p.OwnedItem = items[0];
 
-                db.Players.Remove(p);
+            //    db.Players.Remove(p);
 
-                // Player를 직접적으로 삭제하니까
-                Console.WriteLine("3번 : " + db.Entry(p).State); // Deleted
-                Console.WriteLine("4번 : " + db.Entry(p.Guild).State); // Added
-                Console.WriteLine("5번 : " + db.Entry(p.OwnedItem).State); // Deleted
-            }
+            //    // Player를 직접적으로 삭제하니까
+            //    Console.WriteLine("3번 : " + db.Entry(p).State); // Deleted
+            //    Console.WriteLine("4번 : " + db.Entry(p.Guild).State); // Added
+            //    Console.WriteLine("5번 : " + db.Entry(p.OwnedItem).State); // Deleted
+            //}
 
             db.SaveChanges();
         }
@@ -197,11 +195,7 @@ namespace MMO_EFCore
         // 2) FK가 Nullable이라면
         // - Player가 지워지더라도 FK로 해당 Player 참조하는 Item은 그대로
 
-        // 오늘의 주제
-        // - 직접 State를 조작할 수 있다 (ex. 최적화 등)
-        // ex) Entry().State = EntityState.Added
-        // ex) Entry().Property("").IsModified = true
-
+        // SQL 직접 호출
 
         public static void ShowItems()
         {
@@ -230,34 +224,45 @@ namespace MMO_EFCore
             // Update Test
             using (AppDbContext db = new AppDbContext())
             {
+                // State 조작
                 {
-                    // Disconnected
-                    Player p = new Player();
-                    p.PlayerId = 2;
-                    p.Name = "FankerSense";
-                    // 아직 DB는 이 새로운 길드의 존재도 모름
-                    p.Guild = new Guild { GuildName = "Udpate Guild" };
-
-                    Console.WriteLine("6번)" + db.Entry(p.Guild).State);
-                    db.Players.Update(p);
-                    Console.WriteLine("7번)" + db.Entry(p.Guild).State);
+                    Player p = new Player() { Name = "StateTest" };
+                    db.Entry(p).State = EntityState.Added;
+                    db.SaveChanges();
                 }
 
+                // TrackGraph
                 {
-                    Player p = new Player();
-                    p.PlayerId = 3;
-                    p.Name = "Deft-_-";
+                    // Disconnected 상태에서
+                    // 모두 갱신하는게 아니라 플레이어 이름'만' 갱신하고 싶다면?
+                    Player p = new Player()
+                    {
+                        PlayerId = 2,
+                        Name = "Faker_new"
+                    };
 
-                    p.Guild = new Guild { GuildName = "Attach Guild" };
+                    p.OwnedItem = new Item() { TemplateId = 777 };
+                    p.Guild = new Guild() { GuildName = "TrackGraphGuild" };
 
-                    Console.WriteLine("8번)" + db.Entry(p.Guild).State);
-                    db.Players.Attach(p);
-                    Console.WriteLine("9번)" + db.Entry(p.Guild).State);
+                    db.ChangeTracker.TrackGraph(p, e =>
+                    {
+                        if (e.Entry.Entity is Player)
+                        {
+                            e.Entry.State = EntityState.Unchanged;
+                            e.Entry.Property("Name").IsModified = true;
+                        }
+                        else if (e.Entry.Entity is Guild)
+                        {
+                            e.Entry.State = EntityState.Unchanged;
+                        }
+                        else if (e.Entry.Entity is Item)
+                        {
+                            e.Entry.State = EntityState.Unchanged;
+                        }
+                    });
+                    db.SaveChanges();
                 }
-
-                db.SaveChanges();
             }
-      
         }
 
         //public static void CalcAverage()

@@ -277,6 +277,26 @@ namespace MMO_EFCore
     // - (DB에 의해 생성된 Key) && (0 아님) -> Unchaged
     // - (DB에 의해 생성된 Key 없음) || 0)-> Added
 
+    // 오늘의 주제
+    // - 직접 State를 조작할 수 있다 (ex. 최적화 등)
+    // ex) Entry().State = EntityState.Added
+    // ex) Entry().Property("").IsModified = true
+
+    // - TrackGraph
+    // Relationship이 있는 Untracked Entity의 State조작
+    // ex) 전체 데이터 중에서 일부만 갱신하고 싶다거나
+
+    // - ChangeTracker
+    // 상태 정보의 변화를 감지하고 싶을 때 유용
+    // ex) Player의 Name이 바뀔 때 로그를 찍고 싶다
+    // ex) Validation 코드를 넣고 싶다거나
+    // ex) Player가 생성된 시점을 CreateTime으로 정보를 추가하고 싶을 때
+
+    // Steps
+    // 1) SaveChanges를 override
+    // 2) ChangeTracker.Entries를 이용해서 바뀔 정보 추출 / 사용
+    //
+
     // Entity 클래스 이름 = 테이블 이름 = item
 
     [Table("Items")]
@@ -297,9 +317,15 @@ namespace MMO_EFCore
 
     }
 
+    public interface ILogEntity
+    {
+        DateTime CreateTime { get; }
+        void SetCreateTime();
+    }
+
     // 클래스 이름 = 테이블 이름 = player
     [Table("Player")]
-    public class Player
+    public class Player : ILogEntity
     {
         // 이름Id -> PK
         public int PlayerId { get; set; }
@@ -309,6 +335,12 @@ namespace MMO_EFCore
 
         public Item OwnedItem { get; set; }
         public Guild Guild { get; set; }
+
+        public DateTime CreateTime { get; private set; }
+        public void SetCreateTime()
+        {
+            CreateTime = DateTime.Now;
+        }
     }
 
     [Table("Guild")]
