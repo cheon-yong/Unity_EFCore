@@ -271,6 +271,11 @@ namespace MMO_EFCore
     // 3) 모든 non-Relational Property의 IsModified = true 로 변경
 
     // - 4) Attach
+    // - Untracked Entity를 Tracked Entity로 변경
+
+    // Relationship
+    // - (DB에 의해 생성된 Key) && (0 아님) -> Unchaged
+    // - (DB에 의해 생성된 Key 없음) || 0)-> Added
 
     // Entity 클래스 이름 = 테이블 이름 = item
 

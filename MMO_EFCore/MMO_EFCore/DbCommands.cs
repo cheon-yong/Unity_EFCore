@@ -73,16 +73,6 @@ namespace MMO_EFCore
                 {
                     TemplateId = 101,
                     Owner = yj
-                },
-                new Item()
-                {
-                    TemplateId = 102,
-                    Owner = faker,
-                },
-                new Item()
-                {
-                    TemplateId = 103,
-                    Owner = deft
                 }
             };
 
@@ -189,23 +179,29 @@ namespace MMO_EFCore
         //    ShowItems();
         //}
 
-        //// RelationShip 복습
-        //// - Principal Entity (주요 -> Player)
-        //// - Dependent Entity (의존적 -> FK 포함하는 쪽 -> item)
+        // RelationShip 복습
+        // - Principal Entity (주요 -> Player)
+        // - Dependent Entity (의존적 -> FK 포함하는 쪽 -> item)
 
-        //// 오늘의 주제
-        //// Dependent 데이터가 Principal 데이터 없이 존재할 수 있는가?
-        //// - 1) 주인이 없는 아이템은 불가능!
-        //// - 2) 주인이 없는 아이템도 가능! (ex. 로그 차원에서 남기는 경우)
+        // 오늘의 주제
+        // Dependent 데이터가 Principal 데이터 없이 존재할 수 있는가?
+        // - 1) 주인이 없는 아이템은 불가능!
+        // - 2) 주인이 없는 아이템도 가능! (ex. 로그 차원에서 남기는 경우)
 
-        //// 그러면 2 케이스 어떻게 구분해서 설정을 해야할까??
-        //// 답은 Nullable ! ex)int?
-        //// FK 그냥 int로 설정하면 1번, Nullable으로 설정하면 2번
+        // 그러면 2 케이스 어떻게 구분해서 설정을 해야할까??
+        // 답은 Nullable ! ex)int?
+        // FK 그냥 int로 설정하면 1번, Nullable으로 설정하면 2번
 
-        //// 1) FK가 Nullable이 아니라면
-        //// - Player가 지워지면, FK로 해당 Player 참조하는 Item도 같이 삭제됨
-        //// 2) FK가 Nullable이라면
-        //// - Player가 지워지더라도 FK로 해당 Player 참조하는 Item은 그대로
+        // 1) FK가 Nullable이 아니라면
+        // - Player가 지워지면, FK로 해당 Player 참조하는 Item도 같이 삭제됨
+        // 2) FK가 Nullable이라면
+        // - Player가 지워지더라도 FK로 해당 Player 참조하는 Item은 그대로
+
+        // 오늘의 주제
+        // - 직접 State를 조작할 수 있다 (ex. 최적화 등)
+        // ex) Entry().State = EntityState.Added
+        // ex) Entry().Property("").IsModified = true
+
 
         public static void ShowItems()
         {
@@ -227,6 +223,41 @@ namespace MMO_EFCore
                     }   
                 }
             }
+        }
+
+        public static void TestUpdateAttach()
+        {
+            // Update Test
+            using (AppDbContext db = new AppDbContext())
+            {
+                {
+                    // Disconnected
+                    Player p = new Player();
+                    p.PlayerId = 2;
+                    p.Name = "FankerSense";
+                    // 아직 DB는 이 새로운 길드의 존재도 모름
+                    p.Guild = new Guild { GuildName = "Udpate Guild" };
+
+                    Console.WriteLine("6번)" + db.Entry(p.Guild).State);
+                    db.Players.Update(p);
+                    Console.WriteLine("7번)" + db.Entry(p.Guild).State);
+                }
+
+                {
+                    Player p = new Player();
+                    p.PlayerId = 3;
+                    p.Name = "Deft-_-";
+
+                    p.Guild = new Guild { GuildName = "Attach Guild" };
+
+                    Console.WriteLine("8번)" + db.Entry(p.Guild).State);
+                    db.Players.Attach(p);
+                    Console.WriteLine("9번)" + db.Entry(p.Guild).State);
+                }
+
+                db.SaveChanges();
+            }
+      
         }
 
         //public static void CalcAverage()
