@@ -217,7 +217,7 @@ namespace MMO_EFCore
     // - 2) Database.Migarte 호출
     // - 3) Command Line 방식
     // - Update-Database [options]
-    
+
     // 특정 Migration으로 Sync (Update-database [Name])
     // 마지막 Migration 삭제 (Remove-Migration)
 
@@ -228,6 +228,49 @@ namespace MMO_EFCore
     // -- Script-Migration [From] [To] [Options]
     // -- DB끼리의 비교를 이용하여 SQL 추출
 
+    // 오늘의 주제 : DbContext 심화 과정 (최적화 등 때문에)
+    // 1) ChangeTracker
+    // - Tracking State 관련
+    // 2) Database
+    // - Transaction
+    // - DB Creation/Migration
+    // - Raw SQL
+    // 3) Model
+    // - DB 모델링 관련
+
+    // State 관리
+    // 0) Detached (No Tracking ! 추적되지 않는 상태. SaveChanges를 해도 존재조차 모름)
+    // 1) Unchanged (DB에는 이미 존재, 딱히 수정사항도 없었음. SaveChanges를 해도 아무 변경도 X)
+    // 2) Deleted (DB에는 아직 있지만, 삭제되어야 함. SaveChanges로 DB에 적용)
+    // 3) Modified (DB에 존재하고 클라이언트에서 수정된 상태. SaveChanges로 적용)
+    // 4) Added (DB에는 아직 존재하지 않음. SaveChanges로 적용)
+
+    // State 체크 방법
+    // - Entry().State
+    // - Entry().Property().IsModified
+    // - Entry().Navigation().IsModified
+
+    // State 가 대부분 '직관적/ 이지만 Realtionship이 개입하면 살짝 더 복잡해짐
+    // - 1) Add/AddRange 사용할 때의 상태 변화
+    // -- NotTracking 상태라면 Added
+    // -- Tracking 상태인데, Fk 설정이 필요한데 따라 Modified / 기존 상태 유지
+    // - 2) Remove/RemoveRange 사용할 떄의 상태 변화
+    // - (DB에 의해 생성된 Key) && (C# 기본값 아님) -> 필요에 따라 Unchanged / Modified / Deleted
+    // - (DB에 의해 생성된 Key없음) || (C# 기본값) - > Added
+    // -- 삭제하는데 왜 굳이 Added인지? 동작의 일관성 때문
+    // -- DB에서도 일단 존재는 알아야 Cascade Delete 처리 
+    //
+    // - 3) Update/UpdateRange
+    // - EF에서 Entity를 Update하는 기본적인 방법은 Update가 아님
+    // - Tracked Entity를 얻어오고 -> property 수정 -> SaveChanges
+    // - Update는 Uptracked Entity를 통으로 업데이트 할 때 (Disconnected State);
+
+    // EF Core에서 Update하면 일어나는 Step
+    // 1) Update 호출
+    // 2) Entity State = Modified로 변경
+    // 3) 모든 non-Relational Property의 IsModified = true 로 변경
+
+    // - 4) Attach
 
     // Entity 클래스 이름 = 테이블 이름 = item
 

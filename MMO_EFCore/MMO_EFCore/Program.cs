@@ -28,7 +28,7 @@ namespace MMO_EFCore
                 Console.WriteLine("명령어를 입력하세요");
                 Console.WriteLine("[0] Force Reset");
                 Console.WriteLine("[1] ShowItems");
-                Console.WriteLine("[2] CalcAverage");
+                Console.WriteLine("[2] TestUpdateAttach");
                 Console.Write(" > ");
                 string command = Console.ReadLine();
                 switch (command)

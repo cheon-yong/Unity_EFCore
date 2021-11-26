@@ -63,7 +63,7 @@ namespace MMO_EFCore
 
         public static void CreateTestData(AppDbContext db)
         {
-            var yj = new Player() { };
+            var yj = new Player() { Name = "yj" };
             var faker = new Player() { Name = "Faker" };
             var deft = new Player() { Name = "Deft" };
 
@@ -128,6 +128,39 @@ namespace MMO_EFCore
 
             db.Items.AddRange(items);
             db.Guilds.Add(guild);
+
+            Console.WriteLine("1번 : " + db.Entry(yj).State);
+            
+            db.SaveChanges();
+
+            // Add Test
+            {
+                Item item = new Item()
+                {
+                    TemplateId = 500,
+                    Owner = yj
+                };
+                db.Items.Add(item);
+                // 아이템 추가 -> 간접적으로 player 영향
+                // player는 Tracking 상태이고 Fk 설정은 필요 없음
+                Console.WriteLine("2번 : " + db.Entry(yj).State);
+            }
+
+            // Delete Test
+            {
+                Player p = db.Players.First();
+
+                // 위에서 아이템이 이미 DB에 들어간 상태(DB 키 있음)
+                p.Guild = new Guild() { GuildName = "삭제될 길드" };
+                p.OwnedItem = items[0];
+
+                db.Players.Remove(p);
+
+                // Player를 직접적으로 삭제하니까
+                Console.WriteLine("3번 : " + db.Entry(p).State); // Deleted
+                Console.WriteLine("4번 : " + db.Entry(p.Guild).State); // Added
+                Console.WriteLine("5번 : " + db.Entry(p.OwnedItem).State); // Deleted
+            }
 
             db.SaveChanges();
         }
@@ -196,19 +229,19 @@ namespace MMO_EFCore
             }
         }
 
-        public static void CalcAverage()
-        {
-            using (AppDbContext db = new AppDbContext())
-            {
-                foreach(double? avarage in db.Items.Select(i => Program.GetAverageReviewScore(i.ItemId)))
-                {
-                    if (avarage == null)
-                        Console.WriteLine("No Review!");
-                    else
-                        Console.WriteLine($"Average : {avarage.Value}");
-                }
-            }
-        }
+        //public static void CalcAverage()
+        //{
+        //    using (AppDbContext db = new AppDbContext())
+        //    {
+        //        foreach(double? avarage in db.Items.Select(i => Program.GetAverageReviewScore(i.ItemId)))
+        //        {
+        //            if (avarage == null)
+        //                Console.WriteLine("No Review!");
+        //            else
+        //                Console.WriteLine($"Average : {avarage.Value}");
+        //        }
+        //    }
+        //}
 
         //public static void Update_1v1()
         //{
