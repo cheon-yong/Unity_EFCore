@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace MMO_EFCore
 {
@@ -25,9 +26,13 @@ namespace MMO_EFCore
         // DB ConnectionString
         // 어떤 DB를 어떻게 연결하라
         public const string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=EfCoreDb;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+
+        public static readonly ILoggerFactory MyLoggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
-            options.UseSqlServer(ConnectionString);
+            options
+                .UseLoggerFactory(MyLoggerFactory)
+                .UseSqlServer(ConnectionString);
 
         }
 
