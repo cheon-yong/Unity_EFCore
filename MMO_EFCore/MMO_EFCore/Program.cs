@@ -40,7 +40,7 @@ namespace MMO_EFCore
                         DbCommands.ShowItems();
                         break;
                     case "2":
-                        DbCommands.TestUpdateAttach();
+                        DbCommands.Test();
                         break;
                     case "3":
                         break;

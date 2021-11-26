@@ -295,7 +295,23 @@ namespace MMO_EFCore
     // Steps
     // 1) SaveChanges를 override
     // 2) ChangeTracker.Entries를 이용해서 바뀔 정보 추출 / 사용
-    //
+
+    // SQL 직접 호출
+    // 경우에 따라 직접 만든 SQL 호출 할 수 있다
+    // ex) LINQ로 처리할 수 없는 것 -> Stored Procedure 호출 등
+    // ex) 성능 최적화 등
+    // SELECT * FROM ~ WHERE ~~
+
+    // 1) FromSql -> FromSqlRaw / FromSqlInterpolated
+    // - EF Core 쿼리에 Raw SQL 추가
+
+    // 2) ExecuteSqlCommand -> ExecuteSqlRaw / ExecuteSqlInterpolated
+    // - Non-Query (SELECT가 아닌) SQL
+
+    // 3) Reload
+    // - Tracked Entity가 이미 있다
+    // - 2)번에 의해 DB 정보가 변경되었다면?
+    // - 이럴 때 Reload
 
     // Entity 클래스 이름 = 테이블 이름 = item
 

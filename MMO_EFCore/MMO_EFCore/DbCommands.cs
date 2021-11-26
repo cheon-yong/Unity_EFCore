@@ -195,7 +195,50 @@ namespace MMO_EFCore
         // 2) FK가 Nullable이라면
         // - Player가 지워지더라도 FK로 해당 Player 참조하는 Item은 그대로
 
-        // SQL 직접 호출
+        
+
+        public static void Test()
+        {
+            using (AppDbContext db = new AppDbContext())
+            {
+                {
+                    string name = "yj";
+
+                    //string name2 = "'Anything' OR 1=1"
+                    //SQL Injection (Web Hacking)
+
+                    var list = db.Players
+                        .FromSqlRaw("SELECT * FROM dbo.Player WHERE Name = {0}", name)
+                        .Include(p => p.OwnedItem)
+                        .ToList();
+
+                    foreach (var p in list)
+                    {
+                        Console.WriteLine($"{p.Name} {p.PlayerId}");
+                    }
+
+                    var list2 = db.Players
+                        .FromSqlInterpolated($"SELECT * FROM dbo.Player WHERE Name = {name}")
+                        .ToList();
+
+                    foreach (var p in list2)
+                    {
+                        Console.WriteLine($"{p.Name} {p.PlayerId}");
+                    }
+                }
+
+                // ExecuteSqlCommand (Non-Quert SQL)
+                {
+                    Player p = db.Players.Single(p => p.Name == "Faker");
+
+                    string prevName = "Faker";
+                    string afterName = "Faker_New";
+                    db.Database.ExecuteSqlInterpolated($"UPDATE dbo.Player SET NAME={afterName} WHERE Name = {prevName}");
+
+                    db.Entry(p).Reload();
+                }
+            }
+        }
 
         public static void ShowItems()
         {
@@ -219,51 +262,51 @@ namespace MMO_EFCore
             }
         }
 
-        public static void TestUpdateAttach()
-        {
-            // Update Test
-            using (AppDbContext db = new AppDbContext())
-            {
-                // State 조작
-                {
-                    Player p = new Player() { Name = "StateTest" };
-                    db.Entry(p).State = EntityState.Added;
-                    db.SaveChanges();
-                }
+        //public static void TestUpdateAttach()
+        //{
+        //    // Update Test
+        //    using (AppDbContext db = new AppDbContext())
+        //    {
+        //        // State 조작
+        //        {
+        //            Player p = new Player() { Name = "StateTest" };
+        //            db.Entry(p).State = EntityState.Added;
+        //            db.SaveChanges();
+        //        }
 
-                // TrackGraph
-                {
-                    // Disconnected 상태에서
-                    // 모두 갱신하는게 아니라 플레이어 이름'만' 갱신하고 싶다면?
-                    Player p = new Player()
-                    {
-                        PlayerId = 2,
-                        Name = "Faker_new"
-                    };
+        //        // TrackGraph
+        //        {
+        //            // Disconnected 상태에서
+        //            // 모두 갱신하는게 아니라 플레이어 이름'만' 갱신하고 싶다면?
+        //            Player p = new Player()
+        //            {
+        //                PlayerId = 2,
+        //                Name = "Faker_new"
+        //            };
 
-                    p.OwnedItem = new Item() { TemplateId = 777 };
-                    p.Guild = new Guild() { GuildName = "TrackGraphGuild" };
+        //            p.OwnedItem = new Item() { TemplateId = 777 };
+        //            p.Guild = new Guild() { GuildName = "TrackGraphGuild" };
 
-                    db.ChangeTracker.TrackGraph(p, e =>
-                    {
-                        if (e.Entry.Entity is Player)
-                        {
-                            e.Entry.State = EntityState.Unchanged;
-                            e.Entry.Property("Name").IsModified = true;
-                        }
-                        else if (e.Entry.Entity is Guild)
-                        {
-                            e.Entry.State = EntityState.Unchanged;
-                        }
-                        else if (e.Entry.Entity is Item)
-                        {
-                            e.Entry.State = EntityState.Unchanged;
-                        }
-                    });
-                    db.SaveChanges();
-                }
-            }
-        }
+        //            db.ChangeTracker.TrackGraph(p, e =>
+        //            {
+        //                if (e.Entry.Entity is Player)
+        //                {
+        //                    e.Entry.State = EntityState.Unchanged;
+        //                    e.Entry.Property("Name").IsModified = true;
+        //                }
+        //                else if (e.Entry.Entity is Guild)
+        //                {
+        //                    e.Entry.State = EntityState.Unchanged;
+        //                }
+        //                else if (e.Entry.Entity is Item)
+        //                {
+        //                    e.Entry.State = EntityState.Unchanged;
+        //                }
+        //            });
+        //            db.SaveChanges();
+        //        }
+        //    }
+        //}
 
         //public static void CalcAverage()
         //{
